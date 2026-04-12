@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../api";
 
 function Register() {
   const navigate = useNavigate();
@@ -15,7 +14,6 @@ function Register() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -26,25 +24,34 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-    setLoading(true);
 
     try {
-      const data = await registerUser(formData);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(formData)
+        }
+      );
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Registration failed");
+      }
 
       setSuccess("Registration successful");
+      setError("");
 
       setTimeout(() => {
         navigate("/login");
       }, 1000);
     } catch (err) {
       setError(err.message || "Failed to fetch");
-    } finally {
-      setLoading(false);
+      setSuccess("");
     }
   };
 
@@ -52,7 +59,7 @@ function Register() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#e9edf3",
+        background: "#edf1f5",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -64,26 +71,21 @@ function Register() {
           width: "100%",
           maxWidth: "720px",
           background: "#fff",
-          padding: "30px",
           borderRadius: "20px",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.08)"
+          padding: "30px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.08)"
         }}
       >
-        <h2 style={{ color: "#0b3b82", marginBottom: "12px" }}>Register</h2>
+        <h2 style={{ color: "#0c3c8c", marginBottom: "15px" }}>Register</h2>
 
-        {error && (
-          <p style={{ color: "red", marginBottom: "15px" }}>{error}</p>
-        )}
-
-        {success && (
-          <p style={{ color: "green", marginBottom: "15px" }}>{success}</p>
-        )}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        {success && <p style={{ color: "green" }}>{success}</p>}
 
         <form onSubmit={handleSubmit}>
           <input
             type="text"
             name="name"
-            placeholder="Enter name"
+            placeholder="Enter your name"
             value={formData.name}
             onChange={handleChange}
             required
@@ -93,7 +95,7 @@ function Register() {
           <input
             type="email"
             name="email"
-            placeholder="Enter email"
+            placeholder="Enter your email"
             value={formData.email}
             onChange={handleChange}
             required
@@ -103,7 +105,7 @@ function Register() {
           <input
             type="password"
             name="password"
-            placeholder="Enter password"
+            placeholder="Enter your password"
             value={formData.password}
             onChange={handleChange}
             required
@@ -113,7 +115,7 @@ function Register() {
           <input
             type="text"
             name="phone"
-            placeholder="Enter phone"
+            placeholder="Enter your phone"
             value={formData.phone}
             onChange={handleChange}
             required
@@ -130,22 +132,8 @@ function Register() {
             <option value="doctor">Doctor</option>
           </select>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "14px",
-              border: "none",
-              borderRadius: "12px",
-              background: "#2563eb",
-              color: "#fff",
-              fontSize: "17px",
-              fontWeight: "600",
-              cursor: "pointer"
-            }}
-          >
-            {loading ? "Creating..." : "Create account"}
+          <button type="submit" style={buttonStyle}>
+            Create account
           </button>
         </form>
       </div>
@@ -160,8 +148,19 @@ const inputStyle = {
   borderRadius: "12px",
   border: "1px solid #cbd5e1",
   fontSize: "16px",
-  outline: "none",
   boxSizing: "border-box"
+};
+
+const buttonStyle = {
+  width: "100%",
+  padding: "14px",
+  border: "none",
+  borderRadius: "12px",
+  background: "#2563eb",
+  color: "#fff",
+  fontSize: "17px",
+  fontWeight: "600",
+  cursor: "pointer"
 };
 
 export default Register;
