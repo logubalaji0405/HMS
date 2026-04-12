@@ -1,41 +1,47 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { loginUser } from "../api";
 
 function Login() {
-  const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
 
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
+    setFormData({
+      ...formData,
       [e.target.name]: e.target.value
-    }));
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
     try {
-      const data = await loginUser(formData);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(formData)
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-
-      navigate("/");
+      alert("Login successful");
     } catch (err) {
       setError(err.message || "Login failed");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -43,7 +49,7 @@ function Login() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#edf1f5",
+        background: "#eef2f7",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -55,20 +61,20 @@ function Login() {
           width: "100%",
           maxWidth: "720px",
           background: "#fff",
-          borderRadius: "20px",
           padding: "30px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.08)"
+          borderRadius: "20px",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.08)"
         }}
       >
         <h2 style={{ color: "#0c3c8c", marginBottom: "15px" }}>Login</h2>
 
-        {error && <p style={{ color: "red", marginBottom: "12px" }}>{error}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
 
         <form onSubmit={handleSubmit}>
           <input
             type="email"
             name="email"
-            placeholder="Enter your email"
+            placeholder="Enter email"
             value={formData.email}
             onChange={handleChange}
             required
@@ -78,15 +84,15 @@ function Login() {
           <input
             type="password"
             name="password"
-            placeholder="Enter your password"
+            placeholder="Enter password"
             value={formData.password}
             onChange={handleChange}
             required
             style={inputStyle}
           />
 
-          <button type="submit" disabled={loading} style={buttonStyle}>
-            {loading ? "Logging in..." : "Login"}
+          <button type="submit" style={buttonStyle}>
+            Login
           </button>
         </form>
       </div>

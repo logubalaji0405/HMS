@@ -1,10 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { registerUser } from "../api";
 
 function Register() {
-  const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -15,36 +11,47 @@ function Register() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
+    setFormData({
+      ...formData,
       [e.target.name]: e.target.value
-    }));
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
-    setLoading(true);
 
     try {
-      const data = await registerUser(formData);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(formData)
+        }
+      );
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Registration failed");
+      }
 
       setSuccess("Registration successful");
-
-      setTimeout(() => {
-        navigate("/login");
-      }, 1000);
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        phone: "",
+        role: "patient"
+      });
     } catch (err) {
       setError(err.message || "Failed to fetch");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -52,7 +59,7 @@ function Register() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#edf1f5",
+        background: "#eef2f7",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -64,21 +71,21 @@ function Register() {
           width: "100%",
           maxWidth: "720px",
           background: "#fff",
-          borderRadius: "20px",
           padding: "30px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.08)"
+          borderRadius: "20px",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.08)"
         }}
       >
         <h2 style={{ color: "#0c3c8c", marginBottom: "15px" }}>Register</h2>
 
-        {error && <p style={{ color: "red", marginBottom: "12px" }}>{error}</p>}
-        {success && <p style={{ color: "green", marginBottom: "12px" }}>{success}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        {success && <p style={{ color: "green" }}>{success}</p>}
 
         <form onSubmit={handleSubmit}>
           <input
             type="text"
             name="name"
-            placeholder="Enter your name"
+            placeholder="Enter name"
             value={formData.name}
             onChange={handleChange}
             required
@@ -88,7 +95,7 @@ function Register() {
           <input
             type="email"
             name="email"
-            placeholder="Enter your email"
+            placeholder="Enter email"
             value={formData.email}
             onChange={handleChange}
             required
@@ -98,7 +105,7 @@ function Register() {
           <input
             type="password"
             name="password"
-            placeholder="Enter your password"
+            placeholder="Enter password"
             value={formData.password}
             onChange={handleChange}
             required
@@ -108,7 +115,7 @@ function Register() {
           <input
             type="text"
             name="phone"
-            placeholder="Enter your phone"
+            placeholder="Enter phone"
             value={formData.phone}
             onChange={handleChange}
             required
@@ -125,8 +132,8 @@ function Register() {
             <option value="doctor">Doctor</option>
           </select>
 
-          <button type="submit" disabled={loading} style={buttonStyle}>
-            {loading ? "Creating..." : "Create account"}
+          <button type="submit" style={buttonStyle}>
+            Create account
           </button>
         </form>
       </div>
