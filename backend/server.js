@@ -11,25 +11,34 @@ const app = express();
 
 app.use(express.json());
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://hms-black-eta.vercel.app",
+  "https://hms-git-main-logubalaji0405s-projects.vercel.app",
+  "https://hms-sg8l73xc8-logubalaji0405s-projects.vercel.app"
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://hms-git-main-logubalaji0405s-projects.vercel.app",
-      "https://hms-sg8l73xc8-logubalaji0405s-projects.vercel.app"
-    ],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("CORS not allowed"));
+    },
     credentials: true
   })
 );
 
 app.get("/", (req, res) => {
-  res.send("Backend running");
+  res.status(200).json({ message: "Backend running" });
 });
 
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log("MongoDB connection error:", err));
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 const userSchema = new mongoose.Schema(
   {
@@ -51,7 +60,8 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
     role: {
       type: String,
@@ -92,15 +102,12 @@ app.post("/api/auth/register", async (req, res) => {
     });
 
     const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role
-      },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Registration successful",
       token,
       user: {
@@ -112,8 +119,8 @@ app.post("/api/auth/register", async (req, res) => {
       }
     });
   } catch (error) {
-    console.log("Register error:", error);
-    res.status(500).json({
+    console.error("Register error:", error);
+    return res.status(500).json({
       message: "Server error"
     });
   }
@@ -144,15 +151,12 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role
-      },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Login successful",
       token,
       user: {
@@ -164,14 +168,15 @@ app.post("/api/auth/login", async (req, res) => {
       }
     });
   } catch (error) {
-    console.log("Login error:", error);
-    res.status(500).json({
+    console.error("Login error:", error);
+    return res.status(500).json({
       message: "Server error"
     });
   }
 });
 
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
