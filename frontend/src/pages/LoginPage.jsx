@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { loginUser } from "../api";
 
-export default function LoginPage() {
-  const { login } = useAuth();
+function Login() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -11,7 +10,7 @@ export default function LoginPage() {
     password: ""
   });
 
-  const [msg, setMsg] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -23,46 +22,55 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
-      setLoading(true);
-      setMsg("");
+      const data = await loginUser(formData);
 
-      const data = await login(formData.email, formData.password);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      if (data.user.role === "doctor") {
-        navigate("/chat");
-      } else if (data.user.role === "patient") {
-        navigate("/chat");
-      } else {
-        navigate("/");
-      }
-    } catch (error) {
-      setMsg(error.message || "Login failed");
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: "760px", margin: "30px auto", padding: "20px" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#e9edf3",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "30px"
+      }}
+    >
       <div
         style={{
+          width: "100%",
+          maxWidth: "720px",
           background: "#fff",
-          borderRadius: "18px",
-          padding: "22px",
-          boxShadow: "0 8px 22px rgba(0,0,0,0.08)"
+          padding: "30px",
+          borderRadius: "20px",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.08)"
         }}
       >
-        <h2 style={{ color: "#0d2f6b", marginBottom: "16px" }}>Login</h2>
+        <h2 style={{ color: "#0b3b82", marginBottom: "12px" }}>Login</h2>
 
-        {msg && <p style={{ color: "red" }}>{msg}</p>}
+        {error && (
+          <p style={{ color: "red", marginBottom: "15px" }}>{error}</p>
+        )}
 
         <form onSubmit={handleSubmit}>
           <input
             type="email"
             name="email"
-            placeholder="Email"
+            placeholder="Enter email"
             value={formData.email}
             onChange={handleChange}
             required
@@ -72,7 +80,7 @@ export default function LoginPage() {
           <input
             type="password"
             name="password"
-            placeholder="Password"
+            placeholder="Enter password"
             value={formData.password}
             onChange={handleChange}
             required
@@ -84,23 +92,19 @@ export default function LoginPage() {
             disabled={loading}
             style={{
               width: "100%",
-              padding: "12px",
+              padding: "14px",
+              border: "none",
+              borderRadius: "12px",
               background: "#2563eb",
               color: "#fff",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-              fontSize: "16px",
-              fontWeight: "600"
+              fontSize: "17px",
+              fontWeight: "600",
+              cursor: "pointer"
             }}
           >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-
-        <p style={{ marginTop: "16px", color: "#64748b" }}>
-          Demo: admin@healix.com / 123456
-        </p>
       </div>
     </div>
   );
@@ -108,10 +112,13 @@ export default function LoginPage() {
 
 const inputStyle = {
   width: "100%",
-  padding: "12px 14px",
-  marginBottom: "12px",
+  padding: "14px",
+  marginBottom: "14px",
+  borderRadius: "12px",
   border: "1px solid #cbd5e1",
-  borderRadius: "10px",
-  fontSize: "15px",
+  fontSize: "16px",
+  outline: "none",
   boxSizing: "border-box"
 };
+
+export default Login;
