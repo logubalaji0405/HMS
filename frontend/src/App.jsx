@@ -4,21 +4,7 @@ import Home from "./pages/Homepage";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 
-function Home() {
-  return (
-    <div style={{ padding: "40px", fontSize: "24px" }}>
-      Home Page
-    </div>
-  );
-}
 
-function Doctors() {
-  return (
-    <div style={{ padding: "40px", fontSize: "24px" }}>
-      Doctors Page
-    </div>
-  );
-}
 
 function App() {
   return (
