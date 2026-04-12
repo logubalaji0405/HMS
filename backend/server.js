@@ -2,181 +2,41 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+
+import authRoutes from "./routes/authRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
+import appointmentRoutes from "./routes/appointmentRoutes.js";
+import medicalRecordRoutes from "./routes/medicalRecordRoutes.js";
 
 dotenv.config();
 
 const app = express();
 
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
+
 app.use(express.json());
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://hms-black-eta.vercel.app",
-  "https://hms-git-main-logubalaji0405s-projects.vercel.app",
-  "https://hms-sg8l73xc8-logubalaji0405s-projects.vercel.app"
-];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error("CORS not allowed"));
-    },
-    credentials: true
-  })
-);
-
 app.get("/", (req, res) => {
-  res.status(200).json({ message: "Backend running" });
+  res.json({ message: "Backend is running" });
 });
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err));
-
-const userSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true
-    },
-    password: {
-      type: String,
-      required: true
-    },
-    phone: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    role: {
-      type: String,
-      enum: ["patient", "doctor", "admin"],
-      default: "patient"
-    }
-  },
-  { timestamps: true }
-);
-
-const User = mongoose.model("User", userSchema);
-
-app.post("/api/auth/register", async (req, res) => {
-  try {
-    const { name, email, password, phone, role } = req.body;
-
-    if (!name || !email || !password || !phone || !role) {
-      return res.status(400).json({
-        message: "All fields are required"
-      });
-    }
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({
-        message: "User already exists"
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      phone,
-      role: role.toLowerCase()
-    });
-
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    return res.status(201).json({
-      message: "Registration successful",
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    console.error("Register error:", error);
-    return res.status(500).json({
-      message: "Server error"
-    });
-  }
-});
-
-app.post("/api/auth/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({
-        message: "Email and password are required"
-      });
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({
-        message: "Invalid credentials"
-      });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({
-        message: "Invalid credentials"
-      });
-    }
-
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    return res.status(200).json({
-      message: "Login successful",
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    return res.status(500).json({
-      message: "Server error"
-    });
-  }
-});
+app.use("/api/auth", authRoutes);
+app.use("/api", chatRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/records", medicalRecordRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("MongoDB connected");
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err.message);
+  });

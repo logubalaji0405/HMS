@@ -1,64 +1,59 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
-export default function DoctorsPage() {
-  const { authFetch } = useAuth();
-  const [doctors, setDoctors] = useState([]);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+export default function DashboardPage() {
+  const { user, authFetch } = useAuth();
+  const [stats, setStats] = useState(null);
+  const [appointments, setAppointments] = useState([]);
+  const [msg, setMsg] = useState("");
 
   useEffect(() => {
-    const loadDoctors = async () => {
+    const load = async () => {
       try {
-        setLoading(true);
-        setError("");
+        const appointmentList = await authFetch("/appointments/mine");
+        setAppointments(appointmentList);
 
-        const data = await authFetch("/doctors");
-
-        if (Array.isArray(data)) {
-          setDoctors(data);
-        } else {
-          setDoctors([]);
-          setError("Invalid doctors data");
+        if (user.role === "admin") {
+          const data = await authFetch("/admin/dashboard");
+          setStats(data);
         }
-      } catch (err) {
-        setDoctors([]);
-        setError(err.message || "Failed to load doctors");
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        setMsg(error.message);
       }
     };
 
-    loadDoctors();
-  }, [authFetch]);
+    load();
+  }, []);
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h2>Doctors</h2>
+    <div>
+      <h2>{user.role[0].toUpperCase() + user.role.slice(1)} Dashboard</h2>
+      {msg && <p className="error">{msg}</p>}
 
-      {loading && <p>Loading doctors...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {stats && (
+        <div className="grid three">
+          <div className="card"><h3>{stats.patients}</h3><p>Patients</p></div>
+          <div className="card"><h3>{stats.doctors}</h3><p>Doctors</p></div>
+          <div className="card"><h3>{stats.appointments}</h3><p>Appointments</p></div>
+          <div className="card"><h3>{stats.records}</h3><p>Medical Records</p></div>
+          <div className="card"><h3>{stats.messages}</h3><p>Messages</p></div>
+          <div className="card"><h3>{stats.admins}</h3><p>Admins</p></div>
+        </div>
+      )}
 
-      {!loading && !error && doctors.length === 0 && <p>No doctors found</p>}
-
-      <div>
-        {doctors.map((doctor) => (
-          <div
-            key={doctor._id}
-            style={{
-              background: "#fff",
-              padding: "16px",
-              borderRadius: "12px",
-              marginBottom: "12px",
-              boxShadow: "0 4px 10px rgba(0,0,0,0.08)"
-            }}
-          >
-            <h3>{doctor.name}</h3>
-            <p>{doctor.email}</p>
-            <p>{doctor.specialization || "General"}</p>
-            <p>{doctor.availability || "Available"}</p>
-          </div>
-        ))}
+      <div className="card">
+        <h3>Recent Appointments</h3>
+        {appointments.length === 0 ? (
+          <p>No appointments yet.</p>
+        ) : (
+          <ul>
+            {appointments.map((item) => (
+              <li key={item._id}>
+                {item.appointmentDate} - {item.appointmentTime} - {item.status}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

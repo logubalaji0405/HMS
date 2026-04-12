@@ -1,91 +1,84 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function Register() {
+export default function RegisterPage() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     phone: "",
-    role: "patient"
+    role: "patient",
+    specialization: "",
+    availability: ""
   });
 
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/auth/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(formData)
-        }
-      );
+      setLoading(true);
+      setMsg("");
+
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
+        throw new Error(data.message || "Register failed");
       }
 
-      setSuccess("Registration successful");
-      setFormData({
-        name: "",
-        email: "",
-        password: "",
-        phone: "",
-        role: "patient"
-      });
-    } catch (err) {
-      setError(err.message || "Failed to fetch");
+      setMsg("Registration successful");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+    } catch (error) {
+      setMsg(error.message || "Register failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#eef2f7",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "30px"
-      }}
-    >
+    <div style={{ maxWidth: "760px", margin: "30px auto", padding: "20px" }}>
       <div
         style={{
-          width: "100%",
-          maxWidth: "720px",
           background: "#fff",
-          padding: "30px",
-          borderRadius: "20px",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.08)"
+          borderRadius: "18px",
+          padding: "22px",
+          boxShadow: "0 8px 22px rgba(0,0,0,0.08)"
         }}
       >
-        <h2 style={{ color: "#0c3c8c", marginBottom: "15px" }}>Register</h2>
+        <h2 style={{ color: "#0d2f6b", marginBottom: "16px" }}>Register</h2>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        {success && <p style={{ color: "green" }}>{success}</p>}
+        {msg && (
+          <p style={{ color: msg.includes("successful") ? "green" : "red" }}>
+            {msg}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit}>
           <input
             type="text"
             name="name"
-            placeholder="Enter name"
+            placeholder="Full name"
             value={formData.name}
             onChange={handleChange}
             required
@@ -95,7 +88,7 @@ function Register() {
           <input
             type="email"
             name="email"
-            placeholder="Enter email"
+            placeholder="Email"
             value={formData.email}
             onChange={handleChange}
             required
@@ -105,7 +98,7 @@ function Register() {
           <input
             type="password"
             name="password"
-            placeholder="Enter password"
+            placeholder="Password"
             value={formData.password}
             onChange={handleChange}
             required
@@ -115,7 +108,7 @@ function Register() {
           <input
             type="text"
             name="phone"
-            placeholder="Enter phone"
+            placeholder="Phone"
             value={formData.phone}
             onChange={handleChange}
             required
@@ -132,8 +125,44 @@ function Register() {
             <option value="doctor">Doctor</option>
           </select>
 
-          <button type="submit" style={buttonStyle}>
-            Create account
+          {formData.role === "doctor" && (
+            <>
+              <input
+                type="text"
+                name="specialization"
+                placeholder="Specialization"
+                value={formData.specialization}
+                onChange={handleChange}
+                style={inputStyle}
+              />
+
+              <input
+                type="text"
+                name="availability"
+                placeholder="Availability"
+                value={formData.availability}
+                onChange={handleChange}
+                style={inputStyle}
+              />
+            </>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "12px",
+              background: "#2563eb",
+              color: "#fff",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontSize: "16px",
+              fontWeight: "600"
+            }}
+          >
+            {loading ? "Creating..." : "Create account"}
           </button>
         </form>
       </div>
@@ -143,24 +172,10 @@ function Register() {
 
 const inputStyle = {
   width: "100%",
-  padding: "14px",
-  marginBottom: "14px",
-  borderRadius: "12px",
+  padding: "12px 14px",
+  marginBottom: "12px",
   border: "1px solid #cbd5e1",
-  fontSize: "16px",
+  borderRadius: "10px",
+  fontSize: "15px",
   boxSizing: "border-box"
 };
-
-const buttonStyle = {
-  width: "100%",
-  padding: "14px",
-  border: "none",
-  borderRadius: "12px",
-  background: "#2563eb",
-  color: "#fff",
-  fontSize: "17px",
-  fontWeight: "600",
-  cursor: "pointer"
-};
-
-export default Register;

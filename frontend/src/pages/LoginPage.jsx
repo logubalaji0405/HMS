@@ -1,80 +1,68 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-function Login() {
+export default function LoginPage() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
 
-  const [error, setError] = useState("");
+  const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/auth/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(formData)
-        }
-      );
+      setLoading(true);
+      setMsg("");
 
-      const data = await response.json();
+      const data = await login(formData.email, formData.password);
 
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+      if (data.user.role === "doctor") {
+        navigate("/chat");
+      } else if (data.user.role === "patient") {
+        navigate("/chat");
+      } else {
+        navigate("/");
       }
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      alert("Login successful");
-    } catch (err) {
-      setError(err.message || "Login failed");
+    } catch (error) {
+      setMsg(error.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#eef2f7",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "30px"
-      }}
-    >
+    <div style={{ maxWidth: "760px", margin: "30px auto", padding: "20px" }}>
       <div
         style={{
-          width: "100%",
-          maxWidth: "720px",
           background: "#fff",
-          padding: "30px",
-          borderRadius: "20px",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.08)"
+          borderRadius: "18px",
+          padding: "22px",
+          boxShadow: "0 8px 22px rgba(0,0,0,0.08)"
         }}
       >
-        <h2 style={{ color: "#0c3c8c", marginBottom: "15px" }}>Login</h2>
+        <h2 style={{ color: "#0d2f6b", marginBottom: "16px" }}>Login</h2>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {msg && <p style={{ color: "red" }}>{msg}</p>}
 
         <form onSubmit={handleSubmit}>
           <input
             type="email"
             name="email"
-            placeholder="Enter email"
+            placeholder="Email"
             value={formData.email}
             onChange={handleChange}
             required
@@ -84,17 +72,35 @@ function Login() {
           <input
             type="password"
             name="password"
-            placeholder="Enter password"
+            placeholder="Password"
             value={formData.password}
             onChange={handleChange}
             required
             style={inputStyle}
           />
 
-          <button type="submit" style={buttonStyle}>
-            Login
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "12px",
+              background: "#2563eb",
+              color: "#fff",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontSize: "16px",
+              fontWeight: "600"
+            }}
+          >
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+
+        <p style={{ marginTop: "16px", color: "#64748b" }}>
+          Demo: admin@healix.com / 123456
+        </p>
       </div>
     </div>
   );
@@ -102,24 +108,10 @@ function Login() {
 
 const inputStyle = {
   width: "100%",
-  padding: "14px",
-  marginBottom: "14px",
-  borderRadius: "12px",
+  padding: "12px 14px",
+  marginBottom: "12px",
   border: "1px solid #cbd5e1",
-  fontSize: "16px",
+  borderRadius: "10px",
+  fontSize: "15px",
   boxSizing: "border-box"
 };
-
-const buttonStyle = {
-  width: "100%",
-  padding: "14px",
-  border: "none",
-  borderRadius: "12px",
-  background: "#2563eb",
-  color: "#fff",
-  fontSize: "17px",
-  fontWeight: "600",
-  cursor: "pointer"
-};
-
-export default Login;
