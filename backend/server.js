@@ -5,10 +5,12 @@ const app = express();
 
 app.use(express.json());
 
-app.use(cors({
-  origin: "https://your-frontend.vercel.app"
-}));
 
+
+app.use(cors({
+  origin: "https://hms-sg8l73xc8-logubalaji0405s-projects.vercel.app",
+  credentials: true
+}));
 app.get("/", (req, res) => {
   res.send("Backend running");
 });
