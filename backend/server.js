@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 
-import authRoutes from "./routes/auth.js"; // 👈 IMPORTANT (.js required)
+// ✅ Import routes (IMPORTANT .js)
+import authRoutes from "./routes/auth.js";
 
 dotenv.config();
 
@@ -14,14 +15,14 @@ app.use(express.json());
 
 app.use(cors({
   origin: "https://hms-black-eta.vercel.app",
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST"],
   credentials: true
 }));
 
 // ✅ Routes
 app.use("/api/auth", authRoutes);
 
-// ✅ MongoDB Connection
+// ✅ MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.log("❌ Mongo Error:", err));
