@@ -10,7 +10,9 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "https://hms-black-eta.vercel.app"
+}));
 app.use(express.json());
 
 // Routes
