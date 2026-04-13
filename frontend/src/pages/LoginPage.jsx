@@ -1,54 +1,35 @@
 import { useState } from "react";
-import { registerUser } from "../api";
 
 function LoginPage() {
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
-    password: "",
-    phone: "",
-    role: "Patient"
+    password: ""
   });
 
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+    console.log(formData);
 
-    try {
-      const res = await registerUser(formData);
-      alert(res.message);
-      setError("");
-    } catch (err) {
-      setError("Failed to fetch");
-    }
+    alert("Login working ✅");
   };
 
   return (
     <div style={{ padding: "50px" }}>
-      <h2>Register</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <h2>Login</h2>
 
       <form onSubmit={handleSubmit}>
-        <input placeholder="Name"
-          onChange={e => setFormData({ ...formData, name: e.target.value })} /><br /><br />
+        <input
+          placeholder="Email"
+          onChange={e => setFormData({ ...formData, email: e.target.value })}
+        /><br /><br />
 
-        <input placeholder="Email"
-          onChange={e => setFormData({ ...formData, email: e.target.value })} /><br /><br />
+        <input
+          type="password"
+          placeholder="Password"
+          onChange={e => setFormData({ ...formData, password: e.target.value })}
+        /><br /><br />
 
-        <input type="password" placeholder="Password"
-          onChange={e => setFormData({ ...formData, password: e.target.value })} /><br /><br />
-
-        <input placeholder="Phone"
-          onChange={e => setFormData({ ...formData, phone: e.target.value })} /><br /><br />
-
-        <select
-          onChange={e => setFormData({ ...formData, role: e.target.value })}>
-          <option>Patient</option>
-          <option>Doctor</option>
-        </select><br /><br />
-
-        <button type="submit">Create account</button>
+        <button type="submit">Login</button>
       </form>
     </div>
   );
