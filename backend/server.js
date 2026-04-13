@@ -1,34 +1,26 @@
-import express from "express";
-import mongoose from "mongoose";
-import cors from "cors";
-import dotenv from "dotenv";
-
-import authRoutes from "./routes/authRoutes.js";
-
-dotenv.config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 
-// Middleware
-app.use(cors({
-  origin: "https://hms-black-eta.vercel.app"
-}));
+// ✅ Middleware
 app.use(express.json());
+app.use(cors({
+  origin: "*", // change to your Vercel URL later
+}));
 
-// Routes
-app.use("/api/auth", authRoutes);
+// ✅ Routes
+app.use("/api/auth", require("./routes/auth"));
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("API is running...");
-});
-
-// MongoDB connection
+// ✅ MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB Connected");
-    app.listen(process.env.PORT || 5000, () => {
-      console.log("Server running...");
-    });
-  })
-  .catch((err) => console.log(err));
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.log("❌ Mongo Error:", err));
+
+// ✅ Server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
