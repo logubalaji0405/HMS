@@ -15,9 +15,23 @@ router.post("/register", (req, res) => {
   });
 });
 
-// ✅ LOGIN API (optional)
-router.post("/login", (req, res) => {
-  res.json({ message: "Login working ✅" });
-});
 
+// ✅ LOGIN API
+router.post("/login", (req, res) => {
+  const { email, password } = req.body;
+
+  // 🔥 Demo login check (replace with DB later)
+  if (email === "test@gmail.com" && password === "123456") {
+    return res.json({
+      success: true,
+      message: "Login successful ✅",
+      token: "dummy-token-123"
+    });
+  }
+
+  res.status(401).json({
+    success: false,
+    message: "Invalid email or password ❌"
+  });
+});
 export default router;
