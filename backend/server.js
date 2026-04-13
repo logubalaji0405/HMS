@@ -8,7 +8,9 @@ const app = express();
 // ✅ Middleware
 app.use(express.json());
 app.use(cors({
-  origin: "*", // change to your Vercel URL later
+  origin: "https://hms-black-eta.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
 }));
 
 // ✅ Routes
