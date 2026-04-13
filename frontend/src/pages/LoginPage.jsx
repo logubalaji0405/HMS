@@ -1,117 +1,48 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
+import { registerUser } from "./api";
 
-export default function LoginPage() {
-  const { login } = useAuth();
-  const navigate = useNavigate();
-
+function LoginPage() {
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
-    password: ""
+    password: "",
+    phone: "",
+    role: "Patient"
   });
 
-  const [msg, setMsg] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      setLoading(true);
-      setMsg("");
-
-      const data = await login(formData.email, formData.password);
-
-      if (data.user.role === "doctor") {
-        navigate("/chat");
-      } else if (data.user.role === "patient") {
-        navigate("/chat");
-      } else {
-        navigate("/");
-      }
-    } catch (error) {
-      setMsg(error.message || "Login failed");
-    } finally {
-      setLoading(false);
+      const res = await registerUser(formData);
+      alert(res.message);
+    } catch (err) {
+      setError("Failed to fetch");
     }
   };
 
   return (
-    <div style={{ maxWidth: "760px", margin: "30px auto", padding: "20px" }}>
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: "18px",
-          padding: "22px",
-          boxShadow: "0 8px 22px rgba(0,0,0,0.08)"
-        }}
-      >
-        <h2 style={{ color: "#0d2f6b", marginBottom: "16px" }}>Login</h2>
+    <div>
+      <h2>Register</h2>
+      {error && <p style={{color:"red"}}>{error}</p>}
 
-        {msg && <p style={{ color: "red" }}>{msg}</p>}
+      <form onSubmit={handleSubmit}>
+        <input placeholder="Name" onChange={e => setFormData({...formData, name:e.target.value})} />
+        <input placeholder="Email" onChange={e => setFormData({...formData, email:e.target.value})} />
+        <input type="password" placeholder="Password" onChange={e => setFormData({...formData, password:e.target.value})} />
+        <input placeholder="Phone" onChange={e => setFormData({...formData, phone:e.target.value})} />
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            style={inputStyle}
-          />
+        <select onChange={e => setFormData({...formData, role:e.target.value})}>
+          <option>Patient</option>
+          <option>Doctor</option>
+        </select>
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            style={inputStyle}
-          />
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "12px",
-              background: "#2563eb",
-              color: "#fff",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-              fontSize: "16px",
-              fontWeight: "600"
-            }}
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-
-        <p style={{ marginTop: "16px", color: "#64748b" }}>
-          Demo: admin@healix.com / 123456
-        </p>
-      </div>
+        <button type="submit">Create account</button>
+      </form>
     </div>
   );
 }
 
-const inputStyle = {
-  width: "100%",
-  padding: "12px 14px",
-  marginBottom: "12px",
-  border: "1px solid #cbd5e1",
-  borderRadius: "10px",
-  fontSize: "15px",
-  boxSizing: "border-box"
-};
+export default LoginPage;
