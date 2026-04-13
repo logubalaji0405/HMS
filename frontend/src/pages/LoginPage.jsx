@@ -18,26 +18,35 @@ function LoginPage() {
     try {
       const res = await registerUser(formData);
       alert(res.message);
+      setError("");
     } catch (err) {
       setError("Failed to fetch");
     }
   };
 
   return (
-    <div>
+    <div style={{ padding: "50px" }}>
       <h2>Register</h2>
-      {error && <p style={{color:"red"}}>{error}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       <form onSubmit={handleSubmit}>
-        <input placeholder="Name" onChange={e => setFormData({...formData, name:e.target.value})} />
-        <input placeholder="Email" onChange={e => setFormData({...formData, email:e.target.value})} />
-        <input type="password" placeholder="Password" onChange={e => setFormData({...formData, password:e.target.value})} />
-        <input placeholder="Phone" onChange={e => setFormData({...formData, phone:e.target.value})} />
+        <input placeholder="Name"
+          onChange={e => setFormData({ ...formData, name: e.target.value })} /><br /><br />
 
-        <select onChange={e => setFormData({...formData, role:e.target.value})}>
+        <input placeholder="Email"
+          onChange={e => setFormData({ ...formData, email: e.target.value })} /><br /><br />
+
+        <input type="password" placeholder="Password"
+          onChange={e => setFormData({ ...formData, password: e.target.value })} /><br /><br />
+
+        <input placeholder="Phone"
+          onChange={e => setFormData({ ...formData, phone: e.target.value })} /><br /><br />
+
+        <select
+          onChange={e => setFormData({ ...formData, role: e.target.value })}>
           <option>Patient</option>
           <option>Doctor</option>
-        </select>
+        </select><br /><br />
 
         <button type="submit">Create account</button>
       </form>

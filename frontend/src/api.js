@@ -1,4 +1,3 @@
-// 🔥 IMPORTANT: Replace with your Railway URL
 const API = "https://hms-production-673e.up.railway.app/api/auth";
 
 export const registerUser = async (data) => {
@@ -7,8 +6,13 @@ export const registerUser = async (data) => {
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
+    mode: "cors"
   });
+
+  if (!res.ok) {
+    throw new Error("Request failed");
+  }
 
   return res.json();
 };
