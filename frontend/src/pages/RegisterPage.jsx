@@ -31,7 +31,7 @@ export default function RegisterPage() {
       setLoading(true);
       setMsg("");
 
-      const response = await fetch("http://localhost:5000/api/auth/register", {
+      const response = await fetch("https://hms-production-673e.up.railway.app/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

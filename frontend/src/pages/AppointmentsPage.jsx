@@ -17,7 +17,7 @@ export default function AppointmentsPage() {
   const loadData = async () => {
     try {
       const [doctorList, appointmentList] = await Promise.all([
-        fetch("http://localhost:5000/api/doctors").then((r) => r.json()),
+        fetch("https://hms-production-673e.up.railway.app/api/doctors").then((r) => r.json()),
         authFetch("/appointments/mine")
       ]);
       setDoctors(doctorList);
