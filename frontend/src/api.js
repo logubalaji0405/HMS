@@ -1,4 +1,4 @@
-const API = "https://hms-production-673e.up.railway.app/api/auth";
+const API = "https://hms-production-673e.up.railway.app/";
 
 export const registerUser = async (data) => {
   const res = await fetch(`${API}/register`, {
