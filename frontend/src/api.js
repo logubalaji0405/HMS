@@ -1,7 +1,7 @@
-const API_URL = import.meta.env.VITE_API_URL;
+const API = "https://hms-production-673e.up.railway.app/api/auth";;
 
 export async function registerUser(formData) {
-  const response = await fetch(`${API_URL}/api/auth/register`, {
+  const response = await fetch(`${API}/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -19,7 +19,7 @@ export async function registerUser(formData) {
 }
 
 export async function loginUser(formData) {
-  const response = await fetch(`${API_URL}/api/auth/login`, {
+  const response = await fetch(`${API}/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
