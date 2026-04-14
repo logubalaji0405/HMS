@@ -16,13 +16,22 @@ const app = express(); // ✅ MUST COME FIRST
 
 // ✅ CORS FIX (VERY IMPORTANT)
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://hms-black-eta.vercel.app"
-  ],
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "https://hms-black-eta.vercel.app"
+    ],
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
+
 
 // ✅ MIDDLEWARE
 app.use(express.json());
