@@ -15,23 +15,29 @@ router.post("/register", (req, res) => {
   });
 });
 
-// ✅ LOGIN API
-router.post("/login", (req, res) => {
-  const { email, password } = req.body;
+// ✅ LOGIN
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  if (email === "test@gmail.com" && password === "123456") {
-    return res.json({
-      success: true,
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "User not found ❌" });
+    }
+
+    if (user.password !== password) {
+      return res.status(400).json({ message: "Invalid password ❌" });
+    }
+
+    res.json({
       message: "Login successful ✅",
-      token: "dummy-token-123"
+      user
     });
+
+  } catch (err) {
+    res.status(500).json({ message: "Server error ❌" });
   }
-
-  res.status(401).json({
-    success: false,
-    message: "Invalid email or password ❌"
-  });
 });
-
 
 export default router;
