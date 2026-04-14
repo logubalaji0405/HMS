@@ -7,29 +7,34 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
 import doctorRoutes from "./routes/doctorRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
-
-app.use("/api/doctors", doctorRoutes);
-app.use("/api/appointments", appointmentRoutes);
-app.use("/api/records", recordRoutes);
-app.use("/api", chatRoutes);
+import recordRoutes from "./routes/recordRoutes.js";   // (if exists)
+import chatRoutes from "./routes/chatRoutes.js";       // (if exists)
 
 dotenv.config();
 
-const app = express();
+const app = express(); // ✅ MUST COME FIRST
 
-// ✅ CORS FIX
+// ✅ CORS FIX (VERY IMPORTANT)
 app.use(cors({
-  origin: ["http://localhost:5173", "https://hms-black-eta.vercel.app"],
-  methods: ["GET", "POST"],
+  origin: [
+    "http://localhost:5173",
+    "https://hms-black-eta.vercel.app"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
 
+// ✅ MIDDLEWARE
 app.use(express.json());
 
-// ✅ ROUTES
+// ✅ ROUTES (AFTER MIDDLEWARE)
 app.use("/api/auth", authRoutes);
+app.use("/api/doctors", doctorRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/records", recordRoutes);
+app.use("/api/chat", chatRoutes);
 
-// ✅ TEST
+// ✅ TEST ROUTE
 app.get("/", (req, res) => {
   res.send("API Running ✅");
 });
