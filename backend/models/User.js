@@ -8,7 +8,6 @@ const userSchema = new mongoose.Schema({
   role: String,
   specialization: String,
   availability: String
-
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);

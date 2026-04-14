@@ -1,96 +1,52 @@
 import express from "express";
-import User from "../models/User.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
+import cors from "cors";
+import dotenv from "dotenv";
 
-const router = express.Router();
+// ROUTES
+import authRoutes from "./routes/auth.js";
 
-// ================= REGISTER =================
-router.post("/register", async (req, res) => {
-  try {
-    const {
-      name,
-      email,
-      password,
-      phone,
-      role,
-      specialization,
-      availability
-    } = req.body;
+dotenv.config();
 
-    console.log("Register Data:", req.body);
+const app = express();
 
-    // ✅ check existing user
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists ❌" });
+// ✅ CORS FIX (FINAL)
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://hms-black-eta.vercel.app"
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed"));
     }
+  },
+  credentials: true
+}));
 
-    // ✅ hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+// ✅ BODY PARSER
+app.use(express.json());
 
-    // ✅ normalize role (IMPORTANT FIX)
-    const userRole = role.toLowerCase();
+// ✅ ROUTES
+app.use("/api/auth", authRoutes);
 
-    const user = new User({
-      name,
-      email,
-      password: hashedPassword,
-      phone,
-      role: userRole,
-      specialization: userRole === "doctor" ? specialization : "",
-      availability: userRole === "doctor" ? availability : ""
-    });
-
-    await user.save();
-
-    res.json({
-      message: "User registered successfully ✅"
-    });
-
-  } catch (err) {
-    console.log("REGISTER ERROR:", err);
-    res.status(500).json({ message: "Server error ❌" });
-  }
+// ✅ TEST
+app.get("/", (req, res) => {
+  res.send("API Running ✅");
 });
 
-// ================= LOGIN =================
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
+// ✅ DB CONNECT
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => console.log("❌ Mongo Error:", err));
 
-    console.log("Login Data:", req.body);
-
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(400).json({ message: "User not found ❌" });
-    }
-
-    // ✅ compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid password ❌" });
-    }
-
-    // ✅ CREATE TOKEN (VERY IMPORTANT)
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET || "secret123",
-      { expiresIn: "7d" }
-    );
-
-    res.json({
-      message: "Login successful ✅",
-      user,
-      token
-    });
-
-  } catch (err) {
-    console.log("LOGIN ERROR:", err);
-    res.status(500).json({ message: "Server error ❌" });
-  }
+// ✅ SERVER
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
-
-export default router;
