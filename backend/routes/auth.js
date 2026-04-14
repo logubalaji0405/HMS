@@ -4,10 +4,19 @@ import bcrypt from "bcryptjs";
 
 const router = express.Router();
 
+
 // ================= REGISTER =================
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password, phone, role } = req.body;
+    const {
+      name,
+      email,
+      password,
+      phone,
+      role,
+      specialization,
+      availability
+    } = req.body;
 
     console.log("Register Data:", req.body);
 
@@ -25,7 +34,11 @@ router.post("/register", async (req, res) => {
       email,
       password: hashedPassword,
       phone,
-      role
+      role,
+
+      // ✅ SAVE DOCTOR FIELDS
+      specialization: role === "Doctor" ? specialization : "",
+      availability: role === "Doctor" ? availability : ""
     });
 
     await user.save();

@@ -6,6 +6,11 @@ const userSchema = new mongoose.Schema({
   password: String,
   phone: String,
   role: String
+
+   // ✅ ADD THESE
+  specialization: String,
+  availability: String
+  
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);
