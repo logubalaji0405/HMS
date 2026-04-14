@@ -15,12 +15,10 @@ router.post("/register", (req, res) => {
   });
 });
 
-
 // ✅ LOGIN API
 router.post("/login", (req, res) => {
   const { email, password } = req.body;
 
-  // 🔥 Demo login check (replace with DB later)
   if (email === "test@gmail.com" && password === "123456") {
     return res.json({
       success: true,
@@ -34,4 +32,6 @@ router.post("/login", (req, res) => {
     message: "Invalid email or password ❌"
   });
 });
+
+
 export default router;

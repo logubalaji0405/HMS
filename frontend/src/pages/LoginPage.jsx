@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
 const API = "https://hms-production-673e.up.railway.app/api/auth";
 
@@ -27,10 +27,11 @@ function LoginPage() {
       if (res.ok) {
         setMessage("Login successful ✅");
 
-        // 🔐 Save token (if backend sends)
-        if (data.token) {
-          localStorage.setItem("token", data.token);
-        }
+        // 🔐 Save token
+        localStorage.setItem("token", data.token);
+
+        // 👉 redirect (optional)
+        window.location.href = "/dashboard";
 
       } else {
         setMessage(data.message || "Login failed ❌");
