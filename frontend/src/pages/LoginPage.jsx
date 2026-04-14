@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-
-const API = "https://hms-production-673e.up.railway.app/api/auth";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function LoginPage() {
   const [formData, setFormData] = useState({
@@ -10,51 +10,52 @@ function LoginPage() {
 
   const [message, setMessage] = useState("");
 
+  const navigate = useNavigate();      // ✅ FIX
+  const { login } = useAuth();         // ✅ use context
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await fetch(`${API}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(formData)
-      });
+      // ✅ call context login
+      await login(formData.email, formData.password);
 
-      const data = await res.json();
+      setMessage("Login successful ✅");
 
-      if (res.ok) {
-        setMessage("Login successful ✅");
-        
-          // 🔐 save user (optional)
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      // 🚀 REDIRECT TO HOME
+      // 🚀 redirect to home
       navigate("/");
 
-      } else {
-        setMessage(data.message);
-      }
-
     } catch (err) {
-      setMessage("Server error ❌");
+      setMessage(err.message || "Login failed ❌");
     }
   };
 
   return (
     <div style={{ padding: "50px" }}>
       <h2>Login</h2>
+
       {message && <p>{message}</p>}
 
       <form onSubmit={handleSubmit}>
-        <input type="email" placeholder="Email"
-          onChange={e => setFormData({ ...formData, email: e.target.value })}
-        /><br /><br />
+        <input
+          type="email"
+          placeholder="Email"
+          required
+          onChange={e =>
+            setFormData({ ...formData, email: e.target.value })
+          }
+        />
+        <br /><br />
 
-        <input type="password" placeholder="Password"
-          onChange={e => setFormData({ ...formData, password: e.target.value })}
-        /><br /><br />
+        <input
+          type="password"
+          placeholder="Password"
+          required
+          onChange={e =>
+            setFormData({ ...formData, password: e.target.value })
+          }
+        />
+        <br /><br />
 
         <button type="submit">Login</button>
       </form>

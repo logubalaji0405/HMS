@@ -10,79 +10,97 @@ export function AuthProvider({ children }) {
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
+  // ✅ SAVE LOGIN
   const saveLogin = (userData, token) => {
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("token", token);
     setUser(userData);
   };
 
+  // ✅ LOGIN
   const login = async (email, password) => {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ email, password })
-    });
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.message || "Login failed");
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed ❌");
+      }
+
+      saveLogin(data.user, data.token);
+
+      return data;
+    } catch (error) {
+      throw error;
     }
-
-    saveLogin(data.user, data.token);
-    return data;
   };
 
+  // ✅ REGISTER
   const registerUser = async (formData) => {
-    const response = await fetch(`${API_URL}/auth/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(formData)
-    });
+    try {
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.message || "Register failed");
+      if (!response.ok) {
+        throw new Error(data.message || "Register failed ❌");
+      }
+
+      return data;
+    } catch (error) {
+      throw error;
     }
-
-    return data;
   };
 
-  const logoutUser = () => {
+  // ✅ LOGOUT (single function)
+  const logout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     setUser(null);
   };
 
+  // ✅ AUTH FETCH (protected API)
   const authFetch = async (path, options = {}) => {
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    const headers = {
-      "Content-Type": "application/json",
-      ...(options.headers || {})
-    };
+      const headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      };
 
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${API_URL}${path}`, {
+        ...options,
+        headers
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || "Request failed ❌");
+      }
+
+      return data;
+    } catch (error) {
+      throw error;
     }
-
-    const response = await fetch(`${API_URL}${path}`, {
-      ...options,
-      headers
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Request failed");
-    }
-
-    return data;
   };
 
   return (
@@ -92,7 +110,7 @@ export function AuthProvider({ children }) {
         setUser,
         login,
         registerUser,
-        logoutUser,
+        logout,
         authFetch
       }}
     >
@@ -101,6 +119,7 @@ export function AuthProvider({ children }) {
   );
 }
 
+// ✅ HOOK
 export function useAuth() {
   return useContext(AuthContext);
 }
