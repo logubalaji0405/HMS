@@ -10,7 +10,7 @@ import MedicalRecordsPage from "./pages/MedicalRecordsPage";
 import ChatPage from "./pages/ChatPage";
 import DashboardPage from "./pages/DashboardPage";
 import { useAuth } from "./context/AuthContext";
-import "./App.css";
+import "./styles.css";
 
 const Protected = ({ children }) => {
   const { user } = useAuth();
