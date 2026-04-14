@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 // ROUTES
 import authRoutes from "./routes/auth.js";
 
+
 dotenv.config();
 
 const app = express();
@@ -28,6 +29,19 @@ app.use(cors({
   },
   credentials: true
 }));
+
+// ✅ IMPORT ROUTES
+import authRoutes from "./routes/auth.js";
+import doctorRoutes from "./routes/doctorRoutes.js";
+import appointmentRoutes from "./routes/appointmentRoutes.js";
+import recordRoutes from "./routes/medicalRecordRoutes.js";
+
+// ✅ USE ROUTES (AFTER app created)
+app.use("/api/auth", authRoutes);
+app.use("/api/doctors", doctorRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/records", recordRoutes);
+
 
 // ✅ BODY PARSER
 app.use(express.json());
