@@ -26,6 +26,13 @@ function LoginPage() {
 
       if (res.ok) {
         setMessage("Login successful ✅");
+        
+          // 🔐 save user (optional)
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // 🚀 REDIRECT TO HOME
+      navigate("/");
+
       } else {
         setMessage(data.message);
       }
