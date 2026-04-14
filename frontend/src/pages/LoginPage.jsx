@@ -26,15 +26,8 @@ function LoginPage() {
 
       if (res.ok) {
         setMessage("Login successful ✅");
-
-        // 🔐 Save token
-        localStorage.setItem("token", data.token);
-
-        // 👉 redirect (optional)
-        window.location.href = "/dashboard";
-
       } else {
-        setMessage(data.message || "Login failed ❌");
+        setMessage(data.message);
       }
 
     } catch (err) {
@@ -45,29 +38,16 @@ function LoginPage() {
   return (
     <div style={{ padding: "50px" }}>
       <h2>Login</h2>
-
       {message && <p>{message}</p>}
 
       <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          required
-          onChange={(e) =>
-            setFormData({ ...formData, email: e.target.value })
-          }
-        />
-        <br /><br />
+        <input type="email" placeholder="Email"
+          onChange={e => setFormData({ ...formData, email: e.target.value })}
+        /><br /><br />
 
-        <input
-          type="password"
-          placeholder="Password"
-          required
-          onChange={(e) =>
-            setFormData({ ...formData, password: e.target.value })
-          }
-        />
-        <br /><br />
+        <input type="password" placeholder="Password"
+          onChange={e => setFormData({ ...formData, password: e.target.value })}
+        /><br /><br />
 
         <button type="submit">Login</button>
       </form>

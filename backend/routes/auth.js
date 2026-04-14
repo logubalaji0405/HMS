@@ -1,24 +1,50 @@
 import express from "express";
+import User from "../models/User.js";
+import bcrypt from "bcryptjs";
 
 const router = express.Router();
 
-// ✅ REGISTER API
-router.post("/register", (req, res) => {
-  const { name, email, password } = req.body;
+// ================= REGISTER =================
+router.post("/register", async (req, res) => {
+  try {
+    const { name, email, password, phone, role } = req.body;
 
-  console.log("User Data:", req.body);
+    console.log("Register Data:", req.body);
 
-  res.status(200).json({
-    success: true,
-    message: "User registered successfully ✅",
-    user: { name, email }
-  });
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists ❌" });
+    }
+
+    // 🔐 HASH PASSWORD
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      role
+    });
+
+    await user.save();
+
+    res.json({ message: "User registered successfully ✅" });
+
+  } catch (err) {
+    console.log("REGISTER ERROR:", err);
+    res.status(500).json({ message: "Server error ❌" });
+  }
 });
 
-// ✅ LOGIN
+
+// ================= LOGIN =================
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    console.log("Login Data:", req.body);
 
     const user = await User.findOne({ email });
 
@@ -26,7 +52,10 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "User not found ❌" });
     }
 
-    if (user.password !== password) {
+    // 🔥 COMPARE HASHED PASSWORD
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
       return res.status(400).json({ message: "Invalid password ❌" });
     }
 
@@ -36,6 +65,7 @@ router.post("/login", async (req, res) => {
     });
 
   } catch (err) {
+    console.log("LOGIN ERROR:", err);
     res.status(500).json({ message: "Server error ❌" });
   }
 });
