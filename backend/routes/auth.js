@@ -1,11 +1,11 @@
 import express from "express";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
-
-// ================= REGISTER =================
+// ✅ REGISTER
 router.post("/register", async (req, res) => {
   try {
     const {
@@ -18,15 +18,11 @@ router.post("/register", async (req, res) => {
       availability
     } = req.body;
 
-    console.log("Register Data:", req.body);
-
     const existingUser = await User.findOne({ email });
-
     if (existingUser) {
       return res.status(400).json({ message: "User already exists ❌" });
     }
 
-    // 🔐 HASH PASSWORD
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = new User({
@@ -35,8 +31,6 @@ router.post("/register", async (req, res) => {
       password: hashedPassword,
       phone,
       role,
-
-      // ✅ SAVE DOCTOR FIELDS
       specialization: role === "Doctor" ? specialization : "",
       availability: role === "Doctor" ? availability : ""
     });
@@ -46,39 +40,38 @@ router.post("/register", async (req, res) => {
     res.json({ message: "User registered successfully ✅" });
 
   } catch (err) {
-    console.log("REGISTER ERROR:", err);
     res.status(500).json({ message: "Server error ❌" });
   }
 });
 
-
-// ================= LOGIN =================
+// ✅ LOGIN (WITH TOKEN)
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log("Login Data:", req.body);
-
     const user = await User.findOne({ email });
-
     if (!user) {
       return res.status(400).json({ message: "User not found ❌" });
     }
 
-    // 🔥 COMPARE HASHED PASSWORD
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid password ❌" });
     }
 
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET || "secret123",
+      { expiresIn: "7d" }
+    );
+
     res.json({
       message: "Login successful ✅",
-      user
+      user,
+      token
     });
 
   } catch (err) {
-    console.log("LOGIN ERROR:", err);
     res.status(500).json({ message: "Server error ❌" });
   }
 });
