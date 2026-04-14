@@ -8,6 +8,11 @@ import authRoutes from "./routes/auth.js";
 import doctorRoutes from "./routes/doctorRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
 
+app.use("/api/doctors", doctorRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/records", recordRoutes);
+app.use("/api", chatRoutes);
+
 dotenv.config();
 
 const app = express();
