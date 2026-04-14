@@ -7,8 +7,8 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
 import doctorRoutes from "./routes/doctorRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
-import recordRoutes from "./routes/recordRoutes.js";   // (if exists)
-import chatRoutes from "./routes/chatRoutes.js";       // (if exists)
+import recordRoutes from "./routes/medicalRecordRoutes.js";  
+import chatRoutes from "./routes/chatRoutes.js";     
 
 dotenv.config();
 
@@ -31,7 +31,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/appointments", appointmentRoutes);
-app.use("/api/records", recordRoutes);
+app.use("/api/medical-records", recordRoutes);
 app.use("/api/chat", chatRoutes);
 
 // ✅ TEST ROUTE
